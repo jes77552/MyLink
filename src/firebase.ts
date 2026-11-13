@@ -6,6 +6,9 @@ import {
   signInWithPopup,
   signOut,
   onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
   type User as FirebaseUser,
 } from 'firebase/auth';
 import type { User } from './types';
@@ -114,6 +117,48 @@ export const signInWithGoogle = async (): Promise<User> => {
     console.error('Google Sign In Error:', error);
     throw error;
   }
+// Sign up with Firebase Email & Password
+export const signUpWithFirebaseEmail = async (
+  email: string,
+  pass: string,
+  displayName: string
+): Promise<User> => {
+  const fb = initFirebase();
+  if (!fb) {
+    throw new Error('FIREBASE_INITIALIZATION_FAILED');
+  }
+
+  const cred = await createUserWithEmailAndPassword(fb.auth, email, pass);
+  if (displayName && cred.user) {
+    await updateProfile(cred.user, { displayName });
+  }
+
+  const updatedUser: User = {
+    id: cred.user.uid,
+    email: cred.user.email || email,
+    name: displayName || email.split('@')[0],
+    handle: '@' + email.split('@')[0],
+    bio: `안녕하세요, ${displayName || email.split('@')[0]}의 마이링크입니다.`,
+    avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
+      email.split('@')[0]
+    )}&backgroundColor=e2e8f0`,
+  };
+
+  return updatedUser;
+};
+
+// Sign in with Firebase Email & Password
+export const signInWithFirebaseEmail = async (
+  email: string,
+  pass: string
+): Promise<User> => {
+  const fb = initFirebase();
+  if (!fb) {
+    throw new Error('FIREBASE_INITIALIZATION_FAILED');
+  }
+
+  const cred = await signInWithEmailAndPassword(fb.auth, email, pass);
+  return mapFirebaseUserToMyLinkUser(cred.user);
 };
 
 // Sign out
