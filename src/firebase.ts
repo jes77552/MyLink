@@ -117,6 +117,8 @@ export const signInWithGoogle = async (): Promise<User> => {
     console.error('Google Sign In Error:', error);
     throw error;
   }
+};
+
 // Sign up with Firebase Email & Password
 export const signUpWithFirebaseEmail = async (
   email: string,
