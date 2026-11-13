@@ -1,17 +1,17 @@
 import type { User, LinkItem } from '../types';
 
-const USERS_STORAGE_KEY = 'mylink_users_v1';
-const CURRENT_USER_KEY = 'mylink_current_user_id_v1';
-const LINKS_STORAGE_KEY = 'mylink_links_v1';
+const USERS_STORAGE_KEY = 'mylink_users_v2';
+const CURRENT_USER_KEY = 'mylink_current_user_id_v2';
+const LINKS_STORAGE_KEY = 'mylink_links_v2';
 
-// 기본 사용자: 전은석 (@wjsdmstjr)
+// 기본 사용자: 전은석 (@jes77552)
 const DEFAULT_USER: User = {
   id: 'user_eunseok',
-  email: 'wjsdmstjr@gmail.com',
+  email: 'jes77552@gmail.com',
   name: '전은석',
-  handle: '@wjsdmstjr',
+  handle: '@jes77552',
   bio: '안녕하세요 전은석',
-  avatarUrl: 'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=wjsdmstjr&backgroundColor=e2e8f0',
+  avatarUrl: 'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=jes77552&backgroundColor=e2e8f0',
 };
 
 // 기본 링크: 깃허브
@@ -20,7 +20,7 @@ const DEFAULT_LINKS: LinkItem[] = [
     id: 'link_github_initial',
     userId: 'user_eunseok',
     title: '깃허브',
-    url: 'https://github.com/wjsdmstjr',
+    url: 'https://github.com/jes77552/MyLink',
     iconType: 'github',
     clickCount: 0,
     createdAt: Date.now(),

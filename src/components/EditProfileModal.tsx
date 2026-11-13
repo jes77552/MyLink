@@ -10,7 +10,7 @@ interface EditProfileModalProps {
 }
 
 const AVATAR_PRESETS = [
-  'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=wjsdmstjr&backgroundColor=e2e8f0',
+  'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=jes77552&backgroundColor=e2e8f0',
   'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=b6e3f4',
   'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka&backgroundColor=ffdfbf',
   'https://api.dicebear.com/7.x/identicon/svg?seed=eunseok&backgroundColor=c0aede',
