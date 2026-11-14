@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Plus } from 'lucide-react';
 import type { User, LinkItem } from './types';
 import {
   getStoredUsers,
@@ -17,6 +18,7 @@ import { Header } from './components/Header';
 import { ProfileSection } from './components/ProfileSection';
 import { LinkCard } from './components/LinkCard';
 import { EditProfileModal } from './components/EditProfileModal';
+import { AddEditLinkModal } from './components/AddEditLinkModal';
 import { GoogleAuthModal } from './components/GoogleAuthModal';
 import { PublicPageView } from './components/PublicPageView';
 
@@ -25,9 +27,12 @@ export default function App() {
   const [currentUserId, setCurrentUserIdState] = useState<string | null>(null);
   const [links, setLinks] = useState<LinkItem[]>([]);
 
-  // Modals & Views
+  // Modals & Edit Mode States
   const [isPublicView, setIsPublicView] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isAddLinkOpen, setIsAddLinkOpen] = useState(false);
+  const [editingLink, setEditingLink] = useState<LinkItem | null>(null);
   const [isGoogleAuthOpen, setIsGoogleAuthOpen] = useState(false);
 
   // Initialize data on mount
@@ -74,8 +79,8 @@ export default function App() {
   const currentUser = currentUserId ? (users.find((u) => u.id === currentUserId) || null) : null;
   const isAdmin = checkIsAdmin(currentUser);
 
-  // 사이트 소유자 (전은석) 프로필
-  const ownerUser = users.find((u) => u.id === 'user_eunseok') || users[0] || {
+  // 기본 소유자 정보 (비로그인 방문자에게 보여질 기본 프로필)
+  const ownerUser: User = users.find((u) => u.id === 'user_eunseok') || {
     id: 'user_eunseok',
     email: 'jes77552@gmail.com',
     name: '전은석',
@@ -118,6 +123,7 @@ export default function App() {
     }
     setCurrentUserIdState(null);
     setCurrentUserId(null);
+    setIsEditMode(false);
   };
 
   // Update Profile (관리자만 가능)
@@ -131,7 +137,6 @@ export default function App() {
     );
   };
 
-  // Save (Create or Update) Link (관리자만 가능)
   // Save (Create or Update) Link (관리자만 가능)
   const handleSaveLink = (linkData: {
     id?: string;
@@ -206,7 +211,10 @@ export default function App() {
         isAdmin={isAdmin}
         onOpenPublicPage={() => setIsPublicView(true)}
         onOpenAuthModal={() => setIsGoogleAuthOpen(true)}
-        onOpenEditProfile={() => setIsEditProfileOpen(true)}
+        onOpenEditProfile={() => {
+          setIsEditMode(true);
+          setIsEditProfileOpen(true);
+        }}
         onLogout={handleLogout}
         allUsers={users}
         onSwitchUser={handleSwitchUser}
@@ -214,16 +222,38 @@ export default function App() {
 
       {/* Main Body */}
       <main className="flex-1 w-full max-w-xl mx-auto px-4 pb-20">
-        {/* Profile Section (관리자만 수정 연필 표시) */}
+        {/* Profile Section */}
         <ProfileSection
           user={activeUser}
-          onEditProfile={() => setIsEditProfileOpen(true)}
-          isEditable={isAdmin}
           isAdmin={isAdmin}
+          isEditMode={isEditMode}
+          onToggleEditMode={() => setIsEditMode((prev) => !prev)}
+          onEditProfile={() => setIsEditProfileOpen(true)}
+          onOpenAddLink={() => {
+            setEditingLink(null);
+            setIsAddLinkOpen(true);
+          }}
+          onOpenAuthModal={() => setIsGoogleAuthOpen(true)}
         />
 
-        {/* Links List (메인 화면에서는 수정/추가 버튼 없이 순수한 링크 목록만 깔끔하게 노출) */}
-        <div className="space-y-3 mt-6">
+        {/* 프로필 수정을 눌렀을 때만 나타나는 '+ 새로운 링크 추가하기' 전용 버튼 */}
+        {isAdmin && isEditMode && (
+          <div className="mt-6 mb-2 animate-in fade-in slide-in-from-top-2 duration-150">
+            <button
+              onClick={() => {
+                setEditingLink(null);
+                setIsAddLinkOpen(true);
+              }}
+              className="w-full py-3.5 px-4 bg-white border-2 border-dashed border-blue-400 hover:border-blue-600 hover:bg-blue-50/50 text-blue-600 font-semibold rounded-xl flex items-center justify-center gap-2 transition shadow-xs group"
+            >
+              <Plus className="w-5 h-5 group-hover:scale-125 transition-transform" />
+              <span>+ 새로운 링크 추가하기</span>
+            </button>
+          </div>
+        )}
+
+        {/* Links List */}
+        <div className="space-y-3 mt-4">
           {displayedLinks.length === 0 ? (
             <div className="py-12 px-6 text-center bg-white rounded-md border border-gray-200 shadow-2xs">
               <p className="text-gray-500 text-sm font-medium">
@@ -231,7 +261,7 @@ export default function App() {
               </p>
               {isAdmin && (
                 <p className="text-gray-400 text-xs mt-1">
-                  위의 프로필 수정(연필 아이콘)을 눌러 링크를 추가할 수 있습니다.
+                  위의 [프로필 수정] 버튼을 누른 후 [+ 새 링크 추가]를 눌러 링크를 추가할 수 있습니다.
                 </p>
               )}
             </div>
@@ -241,7 +271,12 @@ export default function App() {
                 key={link.id}
                 link={link}
                 onIncrementClick={handleIncrementClick}
-                isEditable={false}
+                isEditable={isAdmin && isEditMode}
+                onEdit={(item) => {
+                  setEditingLink(item);
+                  setIsAddLinkOpen(true);
+                }}
+                onDelete={handleDeleteLink}
               />
             ))
           )}
@@ -265,7 +300,27 @@ export default function App() {
         )}
       </main>
 
-      {/* Modals: 관리자가 프로필 수정을 눌렀을 때 프로필 정보 및 링크 추가/수정이 함께 제공됩니다 */}
+      {/* 새 링크 추가 / 수정 전용 모달 */}
+      <AddEditLinkModal
+        isOpen={isAddLinkOpen}
+        onClose={() => {
+          setIsAddLinkOpen(false);
+          setEditingLink(null);
+        }}
+        onSave={(data) => {
+          handleSaveLink({
+            id: editingLink?.id,
+            title: data.title,
+            url: data.url,
+            iconType: data.iconType,
+          });
+          setIsAddLinkOpen(false);
+          setEditingLink(null);
+        }}
+        initialData={editingLink}
+      />
+
+      {/* 기본 프로필 정보(이름, 소개글, 사진) 변경 모달 */}
       {isAdmin && (
         <EditProfileModal
           isOpen={isEditProfileOpen}
@@ -278,6 +333,7 @@ export default function App() {
         />
       )}
 
+      {/* Google / 이메일 관리자 인증 모달 */}
       <GoogleAuthModal
         isOpen={isGoogleAuthOpen}
         onClose={() => setIsGoogleAuthOpen(false)}
