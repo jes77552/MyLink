@@ -6,12 +6,14 @@ interface ProfileSectionProps {
   user: User;
   onEditProfile: () => void;
   isEditable?: boolean;
+  isAdmin?: boolean;
 }
 
 export const ProfileSection: React.FC<ProfileSectionProps> = ({
   user,
   onEditProfile,
   isEditable = true,
+  isAdmin = false,
 }) => {
   return (
     <div className="flex flex-col items-center text-center pt-8 pb-4">
@@ -36,10 +38,17 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
         )}
       </div>
 
-      {/* Name */}
-      <h1 className="mt-4 text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
-        {user.name}
-      </h1>
+      {/* Name & Admin Badge */}
+      <div className="flex items-center gap-1.5 mt-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
+          {user.name}
+        </h1>
+        {isAdmin && (
+          <span className="px-2 py-0.5 text-[11px] font-semibold bg-blue-100 text-blue-700 rounded-full">
+            관리자
+          </span>
+        )}
+      </div>
 
       {/* Handle */}
       <p className="text-xs sm:text-sm text-gray-400 font-mono tracking-wide mt-1">

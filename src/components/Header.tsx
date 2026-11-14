@@ -4,6 +4,7 @@ import type { User } from '../types';
 
 interface HeaderProps {
   currentUser: User | null;
+  isAdmin: boolean;
   onOpenPublicPage: () => void;
   onOpenAuthModal: () => void;
   onOpenEditProfile: () => void;
@@ -14,6 +15,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   currentUser,
+  isAdmin,
   onOpenPublicPage,
   onOpenAuthModal,
   onOpenEditProfile,
@@ -81,24 +83,33 @@ export const Header: React.FC<HeaderProps> = ({
               {menuOpen && (
                 <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 text-left animate-in fade-in zoom-in-95 duration-100">
                   <div className="px-4 py-3 border-b border-gray-100">
-                    <p className="text-sm font-semibold text-gray-900">{currentUser.name}</p>
-                    <p className="text-xs text-gray-500 truncate">{currentUser.email}</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-gray-900">{currentUser.name}</p>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        isAdmin ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {isAdmin ? '관리자' : '일반 사용자'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 truncate mt-0.5">{currentUser.email}</p>
                     <span className="inline-block mt-1 px-2 py-0.5 text-[11px] font-mono bg-blue-50 text-blue-700 rounded">
                       {currentUser.handle}
                     </span>
                   </div>
 
                   <div className="py-1">
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        onOpenEditProfile();
-                      }}
-                      className="w-full px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                    >
-                      <UserIcon className="w-4 h-4 text-gray-400" />
-                      프로필 편집
-                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => {
+                          setMenuOpen(false);
+                          onOpenEditProfile();
+                        }}
+                        className="w-full px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                      >
+                        <UserIcon className="w-4 h-4 text-blue-600" />
+                        프로필 편집
+                      </button>
+                    )}
                     <button
                       onClick={() => {
                         setMenuOpen(false);
@@ -147,7 +158,7 @@ export const Header: React.FC<HeaderProps> = ({
                       className="w-full px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                     >
                       <PlusCircle className="w-4 h-4 text-blue-500" />
-                      Google 계정 로그인 / 가입
+                      다른 계정 로그인 / 가입
                     </button>
                     <button
                       onClick={() => {
@@ -169,7 +180,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="flex items-center gap-2 px-3 py-1.5 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 shadow-2xs"
             >
               <LogIn className="w-4 h-4 text-blue-600" />
-              <span>Google 로그인</span>
+              <span>관리자 로그인</span>
             </button>
           )}
         </div>

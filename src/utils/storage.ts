@@ -50,11 +50,26 @@ export const saveUsers = (users: User[]) => {
   localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
 };
 
+// 관리자 이메일 목록 (이 이메일로 구글/이메일 로그인 시 관리자 권한 부여)
+export const ADMIN_EMAILS = [
+  'jes77552@gmail.com',
+  'wjsdmstjr@gmail.com',
+];
+
+export const checkIsAdmin = (user: User | null): boolean => {
+  if (!user) return false;
+  if (user.id === 'user_eunseok') return true;
+  if (user.email && ADMIN_EMAILS.some((adm) => adm.toLowerCase() === user.email.toLowerCase())) {
+    return true;
+  }
+  return false;
+};
+
 export const getCurrentUserId = (): string | null => {
   const current = localStorage.getItem(CURRENT_USER_KEY);
   if (current === 'LOGGED_OUT') return null;
   if (current) return current;
-  // 첫 방문 시 기본값으로 DEFAULT_USER 설정
+  // 기본 첫 방문 시 관리자 모드로 초기화 (본인 개발 편의)
   localStorage.setItem(CURRENT_USER_KEY, DEFAULT_USER.id);
   return DEFAULT_USER.id;
 };
