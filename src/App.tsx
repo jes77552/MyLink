@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
 import type { User, LinkItem } from './types';
 import {
   getStoredUsers,
@@ -17,7 +16,6 @@ import {
 import { Header } from './components/Header';
 import { ProfileSection } from './components/ProfileSection';
 import { LinkCard } from './components/LinkCard';
-import { AddEditLinkModal } from './components/AddEditLinkModal';
 import { EditProfileModal } from './components/EditProfileModal';
 import { GoogleAuthModal } from './components/GoogleAuthModal';
 import { PublicPageView } from './components/PublicPageView';
@@ -29,8 +27,6 @@ export default function App() {
 
   // Modals & Views
   const [isPublicView, setIsPublicView] = useState(false);
-  const [isAddEditLinkOpen, setIsAddEditLinkOpen] = useState(false);
-  const [editingLink, setEditingLink] = useState<LinkItem | null>(null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isGoogleAuthOpen, setIsGoogleAuthOpen] = useState(false);
 
@@ -136,7 +132,9 @@ export default function App() {
   };
 
   // Save (Create or Update) Link (관리자만 가능)
+  // Save (Create or Update) Link (관리자만 가능)
   const handleSaveLink = (linkData: {
+    id?: string;
     title: string;
     url: string;
     iconType: LinkItem['iconType'];
@@ -146,12 +144,12 @@ export default function App() {
       return;
     }
 
-    if (editingLink) {
+    if (linkData.id) {
       // Update existing
       setLinks((prev) =>
         prev.map((l) =>
-          l.id === editingLink.id
-            ? { ...l, ...linkData }
+          l.id === linkData.id
+            ? { ...l, title: linkData.title, url: linkData.url, iconType: linkData.iconType }
             : l
         )
       );
@@ -168,7 +166,6 @@ export default function App() {
       };
       setLinks((prev) => [newLink, ...prev]);
     }
-    setEditingLink(null);
   };
 
   // Delete Link (관리자만 가능)
@@ -225,24 +222,8 @@ export default function App() {
           isAdmin={isAdmin}
         />
 
-        {/* "+ 새로운 링크 추가하기" Blue Button (오직 관리자에게만 노출) */}
-        {isAdmin && (
-          <div className="mt-6 mb-4">
-            <button
-              onClick={() => {
-                setEditingLink(null);
-                setIsAddEditLinkOpen(true);
-              }}
-              className="w-full py-3.5 px-4 bg-[#1a56db] hover:bg-[#1648b7] text-white text-sm sm:text-base font-semibold rounded-md shadow-xs flex items-center justify-center gap-2 transition duration-150 cursor-pointer active:scale-[0.99]"
-            >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span>새로운 링크 추가하기</span>
-            </button>
-          </div>
-        )}
-
-        {/* Links List */}
-        <div className={`space-y-3 ${isAdmin ? 'mt-4' : 'mt-6'}`}>
+        {/* Links List (메인 화면에서는 수정/추가 버튼 없이 순수한 링크 목록만 깔끔하게 노출) */}
+        <div className="space-y-3 mt-6">
           {displayedLinks.length === 0 ? (
             <div className="py-12 px-6 text-center bg-white rounded-md border border-gray-200 shadow-2xs">
               <p className="text-gray-500 text-sm font-medium">
@@ -250,7 +231,7 @@ export default function App() {
               </p>
               {isAdmin && (
                 <p className="text-gray-400 text-xs mt-1">
-                  위의 '+ 새로운 링크 추가하기' 버튼을 눌러 첫 링크를 추가해보세요!
+                  위의 프로필 수정(연필 아이콘)을 눌러 링크를 추가할 수 있습니다.
                 </p>
               )}
             </div>
@@ -259,13 +240,8 @@ export default function App() {
               <LinkCard
                 key={link.id}
                 link={link}
-                onEdit={(item) => {
-                  setEditingLink(item);
-                  setIsAddEditLinkOpen(true);
-                }}
-                onDelete={handleDeleteLink}
                 onIncrementClick={handleIncrementClick}
-                isEditable={isAdmin}
+                isEditable={false}
               />
             ))
           )}
@@ -289,25 +265,16 @@ export default function App() {
         )}
       </main>
 
-      {/* Modals */}
-      {isAdmin && (
-        <AddEditLinkModal
-          isOpen={isAddEditLinkOpen}
-          onClose={() => {
-            setIsAddEditLinkOpen(false);
-            setEditingLink(null);
-          }}
-          onSave={handleSaveLink}
-          initialData={editingLink}
-        />
-      )}
-
+      {/* Modals: 관리자가 프로필 수정을 눌렀을 때 프로필 정보 및 링크 추가/수정이 함께 제공됩니다 */}
       {isAdmin && (
         <EditProfileModal
           isOpen={isEditProfileOpen}
           onClose={() => setIsEditProfileOpen(false)}
           currentUser={activeUser}
-          onSave={handleUpdateProfile}
+          onSaveProfile={handleUpdateProfile}
+          links={displayedLinks}
+          onSaveLink={handleSaveLink}
+          onDeleteLink={handleDeleteLink}
         />
       )}
 
